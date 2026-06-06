@@ -8,6 +8,7 @@ import '../providers/meal_provider.dart';
 import '../services/meal_service.dart';
 import '../services/shopping_service.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
 class MealsScreen extends ConsumerStatefulWidget {
@@ -66,7 +67,7 @@ class _MealsScreenState extends ConsumerState<MealsScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: AppGradientBody(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title
@@ -298,7 +299,7 @@ class _MealsScreenState extends ConsumerState<MealsScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

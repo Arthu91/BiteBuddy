@@ -7,6 +7,7 @@ import '../models/enums.dart';
 import '../providers/fasting_provider.dart';
 import '../providers/meal_provider.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 import '../widgets/progress_ring.dart';
 
@@ -18,6 +19,13 @@ class HomeScreen extends ConsumerWidget {
     if (h < 12) return 'Good morning';
     if (h < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  String _dateLabel() {
+    final d = DateTime.now();
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
   }
 
   @override
@@ -39,11 +47,11 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: AppGradientBody(child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // Greeting row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,9 +62,19 @@ class HomeScreen extends ConsumerWidget {
                     children: [
                       Text('${_greeting()}, Alex! 👋',
                           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                      const SizedBox(height: 4),
-                      const Text("You've got this! Small prep today,\nbig wins tomorrow.",
-                          style: TextStyle(fontSize: 14, color: AppColors.textMuted, height: 1.4)),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.greenLight,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(_dateLabel(),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.forestGreen)),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text('Small prep today, big wins tomorrow.',
+                          style: TextStyle(fontSize: 14, color: AppColors.textDark, height: 1.4)),
                     ],
                   ),
                 ),
@@ -65,104 +83,210 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Today at a glance
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Today at a glance',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textDark)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _GlanceItem(icon: '✅', value: '$mealCount/3', label: 'Meals prepped', color: AppColors.forestGreen),
-                      _vDivider(),
-                      _GlanceItem(icon: '🔥', value: '${fasting.session?.targetHours ?? 16}h', label: 'Fasting goal', color: AppColors.orange),
-                      _vDivider(),
-                      _GlanceItem(icon: '📋', value: '$shoppingCount', label: 'Items on list', color: AppColors.forestGreen),
-                      _vDivider(),
-                      const _GlanceItem(icon: '💧', value: '1.6L', label: 'Water goal', color: AppColors.orange),
-                    ],
-                  ),
-                ],
-              ),
+            // Today at a glance — colorful chipstrip (no card border)
+            Row(
+              children: [
+                _GlanceChip(
+                  icon: LucideIcons.utensils,
+                  value: '$mealCount/3',
+                  label: 'Meals',
+                  iconColor: AppColors.forestGreen,
+                  bgColor: AppColors.greenLight,
+                ),
+                const SizedBox(width: 8),
+                _GlanceChip(
+                  icon: LucideIcons.flame,
+                  value: '${fasting.session?.targetHours ?? 16}h',
+                  label: 'Fast goal',
+                  iconColor: AppColors.orange,
+                  bgColor: const Color(0xFFFFF0E6),
+                ),
+                const SizedBox(width: 8),
+                _GlanceChip(
+                  icon: LucideIcons.shoppingCart,
+                  value: '$shoppingCount',
+                  label: 'Shopping',
+                  iconColor: AppColors.forestGreen,
+                  bgColor: AppColors.greenLight,
+                ),
+                const SizedBox(width: 8),
+                const _GlanceChip(
+                  icon: LucideIcons.droplets,
+                  value: '0L',
+                  label: 'Water',
+                  iconColor: AppColors.waterBlue,
+                  bgColor: Color(0xFFEFF6FF),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
 
-            // Fasting card
-            AppCard(
+            // Quick actions strip
+            Row(
+              children: [
+                _QuickAction(label: '+ Add Meal', onTap: () => context.go('/meals')),
+                const SizedBox(width: 8),
+                _QuickAction(label: 'Shopping', onTap: () => context.go('/shopping'), outlined: true),
+                const SizedBox(width: 8),
+                _QuickAction(label: 'Progress', onTap: () => context.push('/progress'), outlined: true),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Fasting — hero card with gradient
+            GestureDetector(
               onTap: () => context.go('/fasting'),
-              child: Row(
-                children: [
-                  ProgressRing(
-                    progress: fasting.progress,
-                    size: 80,
-                    strokeWidth: 8,
-                    progressColor: fasting.isActive ? AppColors.forestGreen : AppColors.border,
-                    child: Text(
-                      fasting.isActive ? fasting.elapsedFormatted.substring(0, 4) : '--',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
-                    ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [AppColors.forestGreen, Color(0xFF3D7A22)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              fasting.isActive ? "You're fasting" : 'Start fasting',
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textDark),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppColors.greenLight, borderRadius: BorderRadius.circular(10)),
-                              child: Text(fasting.protocol.label,
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.forestGreen)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          fasting.isActive ? "Great job! You're on track." : 'Tap to begin your fast',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: fasting.progress,
-                            minHeight: 6,
-                            backgroundColor: AppColors.greenLight,
-                            valueColor: const AlwaysStoppedAnimation(AppColors.forestGreen),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.forestGreen.withValues(alpha: 0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    ProgressRing(
+                      progress: fasting.progress,
+                      size: 100,
+                      strokeWidth: 10,
+                      trackColor: Colors.white24,
+                      progressColor: Colors.white,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            fasting.isActive
+                                ? fasting.elapsedFormatted.substring(0, 5)
+                                : '--:--',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              fasting.isActive
-                                  ? 'Started ${_fmtTime(DateTime.fromMillisecondsSinceEpoch(fasting.session!.startTime))}'
-                                  : '',
-                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                          if (fasting.isActive)
+                            const Text('elapsed', style: TextStyle(fontSize: 10, color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  fasting.isActive ? "You're fasting" : 'Ready to fast?',
+                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white24,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(fasting.protocol.label,
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            fasting.isActive ? 'Great job! Keep it up.' : 'Tap to begin your fast',
+                            style: const TextStyle(fontSize: 13, color: Colors.white),
+                          ),
+                          if (fasting.isActive) ...[
+                            const SizedBox(height: 10),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: fasting.progress,
+                                minHeight: 6,
+                                backgroundColor: Colors.white24,
+                                valueColor: const AlwaysStoppedAnimation(Colors.white),
+                              ),
                             ),
-                            Text(
-                              fasting.isActive ? 'Goal ${_goalTime(fasting)}' : '',
-                              style: const TextStyle(fontSize: 11, color: AppColors.forestGreen, fontWeight: FontWeight.w600),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Started ${_fmtTime(DateTime.fromMillisecondsSinceEpoch(fasting.session!.startTime))}',
+                                  style: const TextStyle(fontSize: 11, color: Colors.white70),
+                                ),
+                                Text(
+                                  'Goal ${_goalTime(fasting)}',
+                                  style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text('Start Fast →',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.forestGreen)),
                             ),
                           ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
-                ],
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+
+            // Macro trackers — 3 individual colored mini-cards
+            Row(
+              children: [
+                Expanded(child: _MacroCard(
+                  emoji: '💧',
+                  label: 'Water',
+                  value: 0,
+                  total: 2.0,
+                  unit: 'L',
+                  color: AppColors.waterBlue,
+                  bgColor: const Color(0xFFEFF6FF),
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _MacroCard(
+                  emoji: '💪',
+                  label: 'Protein',
+                  value: 0,
+                  total: 100,
+                  unit: 'g',
+                  color: AppColors.orange,
+                  bgColor: const Color(0xFFFFF0E6),
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _MacroCard(
+                  emoji: '🔥',
+                  label: 'Calories',
+                  value: 0,
+                  total: 1800,
+                  unit: 'kcal',
+                  color: AppColors.forestGreen,
+                  bgColor: AppColors.greenLight,
+                )),
+              ],
+            ),
+            const SizedBox(height: 14),
 
             // Today's meals + Shopping list
             Row(
@@ -178,39 +302,50 @@ class HomeScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text("Today's meals",
-                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textDark)),
                             GestureDetector(
                               onTap: () => context.go('/meals'),
                               child: const Text('View all',
-                                  style: TextStyle(fontSize: 11, color: AppColors.forestGreen, fontWeight: FontWeight.w600)),
+                                  style: TextStyle(fontSize: 12, color: AppColors.forestGreen, fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         mealPlan.when(
                           loading: () => const SizedBox(height: 40, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                          error: (_, e) => const SizedBox(),
+                          error: (_, _) => const SizedBox(),
                           data: (entries) {
                             if (entries.isEmpty) {
-                              return const Text('No meals today', style: TextStyle(color: AppColors.textMuted, fontSize: 12));
+                              return const Text('No meals today', style: TextStyle(color: AppColors.textMuted, fontSize: 13));
                             }
                             return Column(
-                              children: entries.take(3).map((e) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 36, height: 36,
-                                      decoration: BoxDecoration(color: AppColors.greenLight, borderRadius: BorderRadius.circular(8)),
-                                      child: const Icon(LucideIcons.utensils, size: 16, color: AppColors.forestGreen),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: Text(e.recipe?.recipe.name ?? 'Meal',
-                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                        maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                  ],
-                                ),
-                              )).toList(),
+                              children: entries.take(3).map((e) {
+                                final type = MealTypeExt.fromString(e.entry.mealType);
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 7),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.greenLight,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(type.emoji, style: const TextStyle(fontSize: 11)),
+                                      ),
+                                      const SizedBox(width: 7),
+                                      Expanded(
+                                        child: Text(
+                                          e.recipe?.recipe.name ?? 'Meal',
+                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
                             );
                           },
                         ),
@@ -229,21 +364,21 @@ class HomeScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Shopping list',
-                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textDark)),
                             GestureDetector(
                               onTap: () => context.go('/shopping'),
                               child: const Text('View all',
-                                  style: TextStyle(fontSize: 11, color: AppColors.forestGreen, fontWeight: FontWeight.w600)),
+                                  style: TextStyle(fontSize: 12, color: AppColors.forestGreen, fontWeight: FontWeight.w600)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         shopping.when(
                           loading: () => const SizedBox(height: 40, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                          error: (_, e) => const SizedBox(),
+                          error: (_, _) => const SizedBox(),
                           data: (items) {
                             if (items.isEmpty) {
-                              return const Text('List is empty', style: TextStyle(color: AppColors.textMuted, fontSize: 12));
+                              return const Text('List is empty', style: TextStyle(color: AppColors.textMuted, fontSize: 13));
                             }
                             return Column(
                               children: items.take(4).map((item) => Padding(
@@ -256,13 +391,18 @@ class HomeScreen extends ConsumerWidget {
                                       color: item.checked ? AppColors.forestGreen : AppColors.textMuted,
                                     ),
                                     const SizedBox(width: 6),
-                                    Expanded(child: Text(item.name,
+                                    Expanded(
+                                      child: Text(
+                                        item.name,
                                         style: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: 13,
                                           color: item.checked ? AppColors.textMuted : AppColors.textDark,
                                           decoration: item.checked ? TextDecoration.lineThrough : null,
                                         ),
-                                        maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               )).toList(),
@@ -275,69 +415,9 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-
-            // Macro trackers
-            AppCard(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  _TrackerItem(emoji: '💧', label: 'Water', value: '1.6', total: '2.0', unit: 'L', color: Colors.blue),
-                  _vDivider(),
-                  _TrackerItem(emoji: '💪', label: 'Protein', value: '72', total: '100', unit: 'g', color: AppColors.orange),
-                  _vDivider(),
-                  _TrackerItem(emoji: '🔥', label: 'Calories', value: '1,420', total: '1,800', unit: 'kcal', color: AppColors.forestGreen),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // AI Buddy suggestion
-            AppCard(
-              child: Row(
-                children: [
-                  Image.asset('assets/images/happy.png', height: 56),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(LucideIcons.sparkles, size: 14, color: AppColors.orange),
-                            SizedBox(width: 4),
-                            Text('AI Buddy suggestion',
-                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Try prepping a high-protein lunch tomorrow to help you stay full longer!',
-                          style: TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4),
-                        ),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () => context.push('/ai'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: const Text('Show me ideas',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -352,61 +432,127 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-Widget _vDivider() => Container(width: 1, height: 40, color: AppColors.border, margin: const EdgeInsets.symmetric(horizontal: 8));
-
-class _GlanceItem extends StatelessWidget {
-  final String icon;
+class _GlanceChip extends StatelessWidget {
+  final IconData icon;
   final String value;
   final String label;
-  final Color color;
-  const _GlanceItem({required this.icon, required this.value, required this.label, required this.color});
+  final Color iconColor;
+  final Color bgColor;
+  const _GlanceChip({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.iconColor,
+    required this.bgColor,
+  });
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        Text(icon, style: const TextStyle(fontSize: 20)),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: color)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMuted), textAlign: TextAlign.center),
-      ],
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 18, color: iconColor),
+          const SizedBox(height: 4),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: iconColor)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textDark), textAlign: TextAlign.center),
+        ],
+      ),
     ),
   );
 }
 
-class _TrackerItem extends StatelessWidget {
-  final String emoji;
+class _QuickAction extends StatelessWidget {
   final String label;
-  final String value;
-  final String total;
-  final String unit;
-  final Color color;
-  const _TrackerItem({required this.emoji, required this.label, required this.value, required this.total, required this.unit, required this.color});
+  final VoidCallback onTap;
+  final bool outlined;
+  const _QuickAction({required this.label, required this.onTap, this.outlined = false});
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 4),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500)),
-        ]),
-        const SizedBox(height: 2),
-        Text('$value / $total $unit', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: double.tryParse(value.replaceAll(',', ''))! / double.parse(total.replaceAll(',', '')),
-            minHeight: 4,
-            backgroundColor: AppColors.border,
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: outlined ? Colors.transparent : AppColors.forestGreen,
+        borderRadius: BorderRadius.circular(20),
+        border: outlined ? Border.all(color: AppColors.border) : null,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: outlined ? AppColors.textDark : Colors.white,
         ),
-      ],
+      ),
     ),
   );
+}
+
+class _MacroCard extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final double value;
+  final double total;
+  final String unit;
+  final Color color;
+  final Color bgColor;
+  const _MacroCard({
+    required this.emoji,
+    required this.label,
+    required this.value,
+    required this.total,
+    required this.unit,
+    required this.color,
+    required this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (value / total).clamp(0.0, 1.0);
+    final displayValue = unit == 'kcal' ? value.toInt().toString() : value.toString();
+    final displayTotal = unit == 'kcal' ? total.toInt().toString() : total.toString();
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 18)),
+              ProgressRing(
+                progress: progress,
+                size: 36,
+                strokeWidth: 4,
+                trackColor: Colors.white,
+                progressColor: color,
+                child: Text(
+                  '${(progress * 100).round()}%',
+                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textDark, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 2),
+          Text(
+            unit == 'kcal' ? '$displayValue/$displayTotal' : '$displayValue/$displayTotal $unit',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark),
+          ),
+        ],
+      ),
+    );
+  }
 }

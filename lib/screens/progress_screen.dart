@@ -5,6 +5,7 @@ import '../core/app_colors.dart';
 import '../core/database.dart';
 import '../services/fasting_service.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -47,7 +48,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         showLogo: false,
         actions: const [],
       ),
-      body: FutureBuilder<List<FastingSession>>(
+      body: AppGradientBody(child: FutureBuilder<List<FastingSession>>(
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
@@ -318,7 +319,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           );
         },
-      ),
+      )),
     );
   }
 }

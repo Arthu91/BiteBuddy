@@ -6,6 +6,7 @@ import '../models/enums.dart';
 import '../providers/fasting_provider.dart';
 import '../services/fasting_service.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 import '../widgets/progress_ring.dart';
 
@@ -34,7 +35,7 @@ class _FastingScreenState extends ConsumerState<FastingScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: AppGradientBody(child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           children: [
@@ -229,7 +230,7 @@ class _FastingScreenState extends ConsumerState<FastingScreen> {
             _HistorySection(),
           ],
         ),
-      ),
+      )),
     );
   }
 

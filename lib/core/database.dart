@@ -69,6 +69,14 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'bitebuddy');
   }
+
+  Future<void> clearAll() async {
+    await delete(shoppingItems).go();
+    await delete(mealPlan).go();
+    await delete(fastingSessions).go();
+    await delete(recipeIngredients).go();
+    await delete(recipes).go();
+  }
 }
 
 // Singleton accessor

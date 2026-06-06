@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final Widget? leading;
   final bool showLogo;
+  final Color? backgroundColor;
 
-  const AppHeader({super.key, this.actions, this.leading, this.showLogo = true});
+  const AppHeader({super.key, this.actions, this.leading, this.showLogo = true, this.backgroundColor});
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -14,7 +14,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.cream,
+      backgroundColor: backgroundColor ?? const Color(0xFFD6E8D6),
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: leading,

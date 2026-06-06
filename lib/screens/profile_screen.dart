@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/app_colors.dart';
+import '../core/database.dart';
+import '../providers/fasting_provider.dart';
+import '../providers/meal_provider.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: AppHeader(
@@ -22,7 +27,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: AppGradientBody(child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,20 +191,50 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Dev reset
+            // Dev tools
             Center(
-              child: TextButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('onboarded');
-                  if (context.mounted) context.go('/');
-                },
-                child: const Text('Reset onboarding', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              child: Column(
+                children: [
+                  TextButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.remove('onboarded');
+                      if (context.mounted) context.go('/');
+                    },
+                    child: const Text('Reset onboarding', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Clear all data?'),
+                          content: const Text('This will permanently delete all recipes, meals, fasting sessions, and shopping items.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Clear', style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                      await db.clearAll();
+                      ref.invalidate(mealPlanProvider);
+                      ref.invalidate(recipesProvider);
+                      ref.invalidate(shoppingItemsProvider);
+                      ref.invalidate(fastingProvider);
+                      if (context.mounted) context.go('/home');
+                    },
+                    child: const Text('Clear all data', style: TextStyle(color: Colors.red, fontSize: 12)),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../core/app_colors.dart';
 import '../services/ai_service.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
 class AiSettingsScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
         ),
         showLogo: false,
       ),
-      body: SingleChildScrollView(
+      body: AppGradientBody(child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +255,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

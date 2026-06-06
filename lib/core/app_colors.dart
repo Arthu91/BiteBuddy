@@ -12,4 +12,5 @@ class AppColors {
   static const border      = Color(0xFFEDE8E0);
   static const cardBg      = Color(0xFFFFFFFF);
   static const greenLight  = Color(0xFFE8F0E8);
+  static const waterBlue   = Color(0xFF3B82F6);
 }

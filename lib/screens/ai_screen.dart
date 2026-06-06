@@ -8,6 +8,7 @@ import '../providers/fasting_provider.dart';
 import '../providers/meal_provider.dart';
 import '../services/ai_service.dart';
 import '../services/shopping_service.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
 class AiScreen extends ConsumerStatefulWidget {
@@ -162,7 +163,7 @@ class _AiScreenState extends ConsumerState<AiScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: AppGradientBody(child: Column(
         children: [
           Expanded(
             child: ListView.builder(
@@ -180,7 +181,7 @@ class _AiScreenState extends ConsumerState<AiScreen> {
           if (!_hasKey) _NoKeyBanner(onSetup: () => context.push('/profile')),
           _InputBar(ctrl: _ctrl, loading: _loading, enabled: _hasKey, onSend: _send),
         ],
-      ),
+      )),
     );
   }
 

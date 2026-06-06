@@ -7,6 +7,7 @@ import '../models/enums.dart';
 import '../providers/meal_provider.dart';
 import '../services/shopping_service.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_gradient_body.dart';
 import '../widgets/app_header.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
@@ -167,7 +168,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: AppGradientBody(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -395,7 +396,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }
